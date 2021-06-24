@@ -21,6 +21,8 @@ module.exports = {
         "allowFirstLine": false
       }
     }],
+    "no-irregular-whitespace":'off',
+    "space-before-function-paren": ["warning", "never"],
     "vue/singleline-html-element-content-newline": "off",
     "vue/multiline-html-element-content-newline":"off",
     "vue/name-property-casing": ["error", "PascalCase"],
@@ -96,7 +98,7 @@ module.exports = {
     'no-implied-eval': 2,
     'no-inner-declarations': [2, 'functions'],
     'no-invalid-regexp': 2,
-    'no-irregular-whitespace': 2,
+    /* 'no-irregular-whitespace': 2, */
     'no-iterator': 2,
     'no-label-var': 2,
     'no-labels': [2, {
@@ -172,7 +174,7 @@ module.exports = {
       'after': true
     }],
     'space-before-blocks': [2, 'always'],
-    'space-before-function-paren': [2, 'never'],
+    'space-before-function-paren': 1,
     'space-in-parens': [2, 'never'],
     'space-infix-ops': 2,
     'space-unary-ops': [2, {

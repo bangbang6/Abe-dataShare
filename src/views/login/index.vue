@@ -1,11 +1,22 @@
 <template>
   <div class="login-container">
-    <el-form ref="loginForm" :model="loginForm" :rules="loginRules" class="login-form" auto-complete="on" label-position="left">
-
+    <el-form
+      ref="loginForm"
+      :model="loginForm"
+      :rules="loginRules"
+      class="login-form"
+      auto-complete="on"
+      label-position="left"
+    >
       <div class="title-container">
-        <h3 class="title">Login Form</h3>
+        <img :src="logo" class="sidebar-logo">
+        <div class="sidebar-title">医数链盟</div>
       </div>
-
+      <div class="menu">
+        <div :class="['login-text',activeIndex === 0?'active':'']" @click="e=>activeIndex=0">账号密码登录</div>
+        <div :class="['register-text',activeIndex === 1?'active':'']" @click="e=>activeIndex=1">注册</div>
+        </el-menu>
+      </div>
       <el-form-item prop="username">
         <span class="svg-container">
           <svg-icon icon-class="user" />
@@ -40,14 +51,40 @@
           <svg-icon :icon-class="passwordType === 'password' ? 'eye' : 'eye-open'" />
         </span>
       </el-form-item>
-
-      <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" @click.native.prevent="handleLogin">Login</el-button>
-
-      <div class="tips">
-        <span style="margin-right:20px;">username: admin</span>
-        <span> password: any</span>
-      </div>
-
+      <el-form-item prop="password" v-if="activeIndex===1">
+        <span class="svg-container">
+          <svg-icon icon-class="password" />
+        </span>
+        <el-input
+          
+          :key="passwordType"
+          ref="repeat"
+          v-model="loginForm.repeatPassword"
+          :type="passwordType"
+          placeholder="Password Repeat"
+          name="password"
+          tabindex="2"
+          auto-complete="on"
+          @keyup.enter.native="handleLogin"
+        />
+        <span class="show-pwd" @click="showPwd">
+          <svg-icon :icon-class="passwordType === 'password' ? 'eye' : 'eye-open'" />
+        </span>
+      </el-form-item>
+      <el-button
+        :loading="loading"
+        type="primary"
+        style="width:100%;margin-bottom:30px;"
+        @click.native.prevent="handleLogin"
+        v-if='activeIndex===0'
+      >Login</el-button>
+      <el-button
+      v-else
+        :loading="loading"
+        type="primary"
+        style="width:100%;margin-bottom:30px;"
+        @click.native.prevent="handleLogin"
+      >Register</el-button>
     </el-form>
   </div>
 </template>
@@ -57,7 +94,7 @@ import { validUsername } from '@/utils/validate'
 
 export default {
   name: 'Login',
-  data() {
+  data () {
     const validateUsername = (rule, value, callback) => {
       if (!validUsername(value)) {
         callback(new Error('Please enter the correct user name'))
@@ -74,28 +111,32 @@ export default {
     }
     return {
       loginForm: {
-        username: 'admin',
-        password: '111111'
+        username: '',
+        password: '',
+        repeatPassword: ''
       },
       loginRules: {
         username: [{ required: true, trigger: 'blur', validator: validateUsername }],
         password: [{ required: true, trigger: 'blur', validator: validatePassword }]
       },
+
+      logo: require('@/assets/logo.png'),
       loading: false,
       passwordType: 'password',
-      redirect: undefined
+      redirect: undefined,
+      activeIndex: 0
     }
   },
   watch: {
     $route: {
-      handler: function(route) {
+      handler: function (route) {
         this.redirect = route.query && route.query.redirect
       },
       immediate: true
     }
   },
   methods: {
-    showPwd() {
+    showPwd () {
       if (this.passwordType === 'password') {
         this.passwordType = ''
       } else {
@@ -105,16 +146,17 @@ export default {
         this.$refs.password.focus()
       })
     },
-    handleLogin() {
+    handleLogin () {
       this.$refs.loginForm.validate(valid => {
         if (valid) {
-          this.loading = true
+           this.$router.push({ path: this.redirect || '/info' })
+        /*   this.loading = true
           this.$store.dispatch('user/login', this.loginForm).then(() => {
-            this.$router.push({ path: this.redirect || '/' })
+            this.$router.push({ path: this.redirect || '/info' })
             this.loading = false
           }).catch(() => {
             this.loading = false
-          })
+          }) */
         } else {
           console.log('error submit!!')
           return false
@@ -129,8 +171,8 @@ export default {
 /* 修复input 背景不协调 和光标变色 */
 /* Detail see https://github.com/PanJiaChen/vue-element-admin/pull/927 */
 
-$bg:#283443;
-$light_gray:#fff;
+$bg: #283443;
+$light_gray: #fff;
 $cursor: #fff;
 
 @supports (-webkit-mask: none) and (not (cater-color: $cursor)) {
@@ -169,13 +211,33 @@ $cursor: #fff;
     border-radius: 5px;
     color: #454545;
   }
+  .menu{
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    color:white;
+    height: 40px;
+    margin-bottom:20px;
+    div{
+      cursor: pointer;
+      font-size: 14px;
+      width:160px;
+      height:50px;
+      text-align: center;
+      line-height: 50px;
+      &.active{
+        color: #2593FC;
+        border-bottom:1px #2593FC solid
+      }
+    }
+  }
 }
 </style>
 
 <style lang="scss" scoped>
-$bg:#2d3a4b;
-$dark_gray:#889aa4;
-$light_gray:#eee;
+$bg: #2d3a4b;
+$dark_gray: #889aa4;
+$light_gray: #eee;
 
 .login-container {
   min-height: 100%;
@@ -214,13 +276,16 @@ $light_gray:#eee;
 
   .title-container {
     position: relative;
-
-    .title {
-      font-size: 26px;
-      color: $light_gray;
-      margin: 0px auto 40px auto;
-      text-align: center;
-      font-weight: bold;
+    display: flex;
+    font-size: 20px;
+    color: $light_gray;
+    margin: 0px auto 40px auto;
+    text-align: center;
+    font-weight: bold;
+    justify-content: center;
+    align-items: center;
+    div {
+      margin-left: 20px;
     }
   }
 
