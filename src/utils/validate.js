@@ -10,10 +10,3 @@ export function isExternal (path) {
   return /^(https?:|mailto:|tel:)/.test(path)
 }
 
-/**
- * @param {string} str
- * @returns {Boolean}
- */
-export function validUsername (str) {
-  return str.trim().indexOf('M') > -1 || str.trim().indexOf('T') > -1
-}

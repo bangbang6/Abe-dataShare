@@ -3,22 +3,22 @@
     <div slot="header" class="clearfix">
       <span>申请列表</span>
     </div>
-    <div class="list">
+    <div v-if="list.length" class="list">
       <el-timeline>
         <el-timeline-item
-          v-for="(activity, index) in activities"
+          v-for="(item, index) in list"
           :key="index"
-          :color="activity.color"
-          :timestamp="activity.timestamp"
+          color="#D71E1E"
+          :timestamp="item.applyTime.split('.')[0]"
           placement="top"
         >
-          <div>
-            向username申请
-            <span :style="{color:'#009DFF'}">AAA</span>
+          <div :style="{height:'40px',lineHeight:'40px'}">
+            <span>向{{item.applierName}}申请</span>
+            <span :style="{color:'#009DFF',marginLeft:'5px'}">{{item.attributes}}</span>
           </div>
         </el-timeline-item>
       </el-timeline>
-      <div class="tag">
+      <div class="tag" v-if="list.length">
         <el-tag type="danger" effect="dark" size="mini">最新</el-tag>
       </div>
     </div>
@@ -26,29 +26,17 @@
 </template>
 
 <script>
+import { getUserApplyAttributes } from '@/api/role'
 export default {
   data () {
     return {
-      activities: [{
-        content: '2018-04-12 20:46',
-        timestamp: '2018-04-12 20:46',
-        color: '#D71E1E'
-      }, {
-        content: '2018-04-12 20:46',
-        timestamp: '2018-04-03 20:46',
-        color: '#D71E1E'
-      }, {
-        content: '2018-04-12 20:46',
-        timestamp: '2018-04-03 20:46',
-        color: '#D71E1E'
-
-      }, {
-        content: '2018-04-12 20:46',
-        timestamp: '2018-04-03 20:46',
-        color: '#D71E1E'
-
-      }]
+      list: []
     }
+  },
+  async mounted () {
+    const list = await getUserApplyAttributes()
+    console.log('list', list)
+    this.list = list
   }
 }
 </script>
@@ -58,7 +46,7 @@ export default {
   position: relative;
   .tag {
     position: absolute;
-    left: 180px;
+    left: 200px;
     top: 0px;
   }
 }

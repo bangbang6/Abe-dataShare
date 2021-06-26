@@ -3,6 +3,7 @@
     <el-card>
       <div slot="header" class="clearfix">
         <span>文件上传</span>
+        <el-button type="primary" size="mini" :style="{float:'right'}" @click="upload">上传</el-button>
       </div>
       <div class="upload1">
         <div class="upload">
@@ -21,18 +22,18 @@
               <em>点击上传</em>
             </div>
           </el-upload>
-          <div v-loading="loading" style="marginTop:20px" />
+          <div style="marginTop:20px" />
         </div>
         <div class="message">
           <div class="info">
-            <span class="key">上传文件一次上链:</span>
+            <span class="key">科室:</span>
             <span v-if="firstUpChainTx" class="value">
               {{ firstUpChainTx }}
               <i class="el-icon-circle-check" :style="{color:'#67c23a'}" />
             </span>
           </div>
           <div class="info">
-            <span class="key">二次上链:</span>
+            <span class="key">类型:</span>
             <span v-if="secondUpChainTx" class="value">
               {{ secondUpChainTx }}
               <i class="el-icon-circle-check" :style="{color:'#67c23a'}" />
@@ -54,58 +55,95 @@
       </div>
       <div class="celue">
         <div class="name">文件上传策略</div>
-        <el-divider></el-divider>
+        <el-divider />
         <div class="role">
-          <div class="item">
-            <div class="key">职称:</div>
-            <el-tag type="danger" effect="dark" size="mini">老师</el-tag>
-            <el-tag type="danger" effect="dark" size="mini">学生</el-tag>
+          <div v-for="(item,index) in allRoles" class="item">
+            <div class="key">{{ item.key }}:</div>
+            <el-checkbox-group v-model="selectRolesList[index]">
+              <el-checkbox v-for="role in item.value" :key="role" :label="role" />
+            </el-checkbox-group>
           </div>
         </div>
-        <div class="expression">策略表达式:(a and b)</div>
+        <div class="expression">策略表达式: {{fileLegancy}}</div>
       </div>
     </el-card>
   </div>
 </template>
 
 <script>
-
+import { uploadFile } from '@/api/file'
+import { Message } from 'element-ui'
+import { getAllRoles } from '@/api/role'
 export default {
   data () {
     return {
       action: '',
-      loading: false,
-      channels: [],
-      channel: '同济医院',
       grantReadRes: '',
       grantModifyRes: '',
       firstUpChainTx: '',
-      secondUpChainTx: ''
+      secondUpChainTx: '',
+      fileLegancy: '',
+      allRoles: [],
+      selectRolesList: []
     }
   },
-  mounted () {
-    /* checkChannel().then(res => {
-      if (res.data.code === 200) {
-        this.channels = res.data.data
+  async mounted () {
+    const allRoles = await getAllRoles()
+    this.allRoles = allRoles
+    let length = allRoles.length
+    while (length--) {
+      this.selectRolesList.push([])
 
-      }s
-    }) */
+    }
   },
 
   methods: {
     uploadFile: function (param) {
-      const fileObject = param.file
-      const formData = new FormData()
-      formData.append('file', fileObject)
-      this.loading = true
+      this.file = param.file
     },
     handleRemove (file, fileList) {
       console.log(file, fileList)
-      this.loading = false
 
       this.$refs.upload.abort(file)
+    },
+    async upload () {
+      const formData = new FormData()
+      formData.append('file', this.file)
+      formData.append('rules', this.fileLegancy)
+      const res = await uploadFile(formData)
+      console.log('res', res)
+      if (res) {
+        Message({
+          message: '上传成功',
+          duration: 1000,
+          type: 'success'
+        })
+      }
     }
 
+  },
+  watch: {
+    selectRolesList: {
+      handler: function (newV) {
+        this.fileLegancy = ''
+        console.log('newV', newV);
+        newV.forEach((item, index) => {
+          if (item.length === 0) return
+          else if (item.length === 1) {
+
+            /* index !== 0 && (this.fileLegancy += ' and ' + item) */
+            /* index === 0 &&  */(this.fileLegancy += item)
+          }
+          else {
+            this.fileLegancy = this.fileLegancy + '('
+            this.fileLegancy = this.fileLegancy + item.join(' or ')
+            this.fileLegancy = this.fileLegancy + ')'
+          }
+          if (index < newV.filter(v => v.length > 0).length - 1) this.fileLegancy = this.fileLegancy + ' and '
+        });
+      },
+      immediate: true
+    }
   }
 }
 </script>
@@ -158,10 +196,7 @@ export default {
         .key {
           color: #009dff;
           font-weight: bold;
-        }
-        .el-tag {
-          margin-left: 20px;
-          cursor: pointer;
+          margin-right: 20px;
         }
       }
     }

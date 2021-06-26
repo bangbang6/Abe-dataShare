@@ -13,7 +13,7 @@
     <div class="roles">
       <div class="now-role">
         <div class="title-wrapper">
-          <div class="block"></div>
+          <div class="block" />
 
           <div class="title">现有属性</div>
         </div>
@@ -28,16 +28,16 @@
             class="list-item"
             @click="handleClick(index)"
           >
-            <div class="paper-title overflow">{{ role.title }}</div>
-            <div class="author overflow">{{ role.value }}</div>
+            <div class="paper-title overflow">{{ role.roleKey }}</div>
+            <div class="author overflow">{{ role.roleValue }}</div>
           </div>
         </div>
       </div>
       <div class="request-role">
-        <div class="block"></div>
+        <div class="block" />
         <div class="title-wrapper">
           <div class="title">
-            <div class="block"></div>
+            <div class="block" />
             <div>申请属性</div>
           </div>
           <el-radio-group v-model="sortRule" size="mini">
@@ -49,19 +49,28 @@
           <div class="list-item bold">
             <div class="paper-title">属性名</div>
             <div class="author">属性值</div>
-            <div class="give-person">授予者</div>
+            <div class="give-person">审批者</div>
+            <div class="status">状态</div>
             <div class="time">时间</div>
           </div>
           <div
-            v-for="(role,index) in nowRoles"
+            v-for="(role,index) in requestRoles"
             :key="index"
             class="list-item"
             @click="handleClick(index)"
           >
-            <div class="paper-title overflow">{{ role.title }}</div>
-            <div class="author overflow">{{ role.value }}</div>
-            <div class="give-person">{{role.givePerson}}</div>
-            <div class="time">{{role.time}}</div>
+            <div class="paper-title overflow">{{ role.roleKey }}</div>
+            <div class="author overflow">{{ role.roleValue }}</div>
+
+            <div class="give-person">{{ role.targetUserName }}</div>
+            <div class="status">
+              <el-tag
+                :type="role.type"
+                size="mini"
+                :style="{width:'80px',textAlign:'center'}"
+              >{{ role.status }}</el-tag>
+            </div>
+            <div class="time">{{ role.applyTime.split('.')[0] }}</div>
           </div>
         </div>
       </div>
@@ -70,19 +79,35 @@
 </template>
 
 <script>
+import { getUserApplyAttributes, getUserAttributes } from '@/api/role'
+import { getToken } from '@/utils/auth'
 export default {
   name: 'User',
   data () {
     return {
-      username: 'xx',
-      nowRoles: [{
-        title: 'xx',
-        value: 'xx',
-        givePerson: 'xx',
-        time: 'xx',
-      }],
+      username: getToken('abe-username'),
+      nowRoles: [],
+      requestRoles: [],
       sortRule: '申请时间'
     }
+  },
+  async mounted () {
+    const requestRoles = await getUserApplyAttributes()
+    this.requestRoles = requestRoles.map(item => ({
+      ...item,
+      roleKey: item.attributes.split(':')[0],
+      roleValue: item.attributes.split(':')[1],
+      status: item.state === 0 ? '待处理' : item.result === 1 ? '已同意' : '已拒绝',
+      type: item.state === 0 ? 'primary' : item.result === 1 ? 'success' : 'danger'
+
+    })
+    )
+    const nowRoles = await getUserAttributes()
+    this.nowRoles = nowRoles.map(item => ({
+      ...item,
+      roleKey: item.split(':')[0],
+      roleValue: item.split(':')[1]
+    }))
   }
 }
 </script>
@@ -154,6 +179,7 @@ export default {
             width: 20%;
             text-align: left;
           }
+
           .author {
             width: 80%;
             text-align: left;
@@ -207,7 +233,8 @@ export default {
           .paper-title,
           .author,
           .give-person,
-          .time {
+          .time,
+          .status {
             height: 20px;
             padding: 0 10px;
             text-align: center;
@@ -215,12 +242,16 @@ export default {
             line-height: 30px;
             height: 30px;
           }
+          .status {
+            width: 20%;
+            text-align: left;
+          }
           .paper-title {
             width: 20%;
             text-align: left;
           }
           .author {
-            width: 40%;
+            width: 20%;
             text-align: left;
           }
           .give-person {

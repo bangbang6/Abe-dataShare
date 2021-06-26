@@ -51,18 +51,18 @@
           <svg-icon :icon-class="passwordType === 'password' ? 'eye' : 'eye-open'" />
         </span>
       </el-form-item>
-      <el-form-item prop="password" v-if="activeIndex===1">
+      <el-form-item v-if="activeIndex===1" prop="repassword">
         <span class="svg-container">
           <svg-icon icon-class="password" />
         </span>
         <el-input
-          
+
           :key="passwordType"
           ref="repeat"
-          v-model="loginForm.repeatPassword"
+          v-model="loginForm.repassword"
           :type="passwordType"
           placeholder="Password Repeat"
-          name="password"
+          name="repeatPassword"
           tabindex="2"
           auto-complete="on"
           @keyup.enter.native="handleLogin"
@@ -71,32 +71,47 @@
           <svg-icon :icon-class="passwordType === 'password' ? 'eye' : 'eye-open'" />
         </span>
       </el-form-item>
+      <div v-if="activeIndex===0" class="radio">
+        <el-radio-group v-model="userRole">
+          <el-radio :label="0">医生</el-radio>
+          <el-radio :label="1">管理员</el-radio>
+
+        </el-radio-group>
+      </div>
+      <div v-if="activeIndex===1" class="radio">
+        <el-radio-group v-model="channel">
+          <el-radio v-for="item in channels" :key="item.id" :label="item.id">{{ item.channelName }}</el-radio>
+
+        </el-radio-group>
+      </div>
+
       <el-button
+        v-if="activeIndex===0"
         :loading="loading"
         type="primary"
         style="width:100%;margin-bottom:30px;"
         @click.native.prevent="handleLogin"
-        v-if='activeIndex===0'
       >Login</el-button>
       <el-button
-      v-else
+        v-else
         :loading="loading"
         type="primary"
         style="width:100%;margin-bottom:30px;"
-        @click.native.prevent="handleLogin"
+        @click.native.prevent="handleRegister"
       >Register</el-button>
     </el-form>
   </div>
 </template>
 
 <script>
-import { validUsername } from '@/utils/validate'
+import { adminLogin, getAllChannel, register, userLogin } from '@/api/user'
+import { setToken } from '@/utils/auth'
 
 export default {
   name: 'Login',
   data () {
     const validateUsername = (rule, value, callback) => {
-      if (!validUsername(value)) {
+      if (!value) {
         callback(new Error('Please enter the correct user name'))
       } else {
         callback()
@@ -109,22 +124,35 @@ export default {
         callback()
       }
     }
+    const validaterePassword = (rule, value, callback) => {
+      console.log('value', value)
+      console.log('value2', this.loginForm.password)
+      if (value !== this.loginForm.password) {
+        callback('前后密码不一致')
+      } else {
+        callback()
+      }
+    }
     return {
       loginForm: {
         username: '',
         password: '',
-        repeatPassword: ''
+        repassword: ''
       },
       loginRules: {
         username: [{ required: true, trigger: 'blur', validator: validateUsername }],
-        password: [{ required: true, trigger: 'blur', validator: validatePassword }]
+        password: [{ required: true, trigger: 'blur', validator: validatePassword }],
+        repassword: [{ required: true, trigger: 'blur', validator: validaterePassword }]
       },
 
       logo: require('@/assets/logo.png'),
       loading: false,
       passwordType: 'password',
       redirect: undefined,
-      activeIndex: 0
+      activeIndex: 0,
+      userRole: 0,
+      channel: 1,
+      channels: []
     }
   },
   watch: {
@@ -134,6 +162,10 @@ export default {
       },
       immediate: true
     }
+  },
+  async mounted () {
+    this.channels = await getAllChannel()
+    console.log('this.channels', this.channels)
   },
   methods: {
     showPwd () {
@@ -146,10 +178,34 @@ export default {
         this.$refs.password.focus()
       })
     },
-    handleLogin () {
-      this.$refs.loginForm.validate(valid => {
+    handleRegister () {
+      this.$refs.loginForm.validate(async valid => {
         if (valid) {
-           this.$router.push({ path: this.redirect || '/info' })
+          const info = await register({ ...this.loginForm, channelId: this.channel })
+          console.log('register', info)
+          setToken('abe-token', info.token)
+          setToken('abe-username', info.user.username)
+          this.$router.push({ path: this.redirect || '/info' })
+        }
+      })
+    },
+    handleLogin () {
+      this.$refs.loginForm.validate(async valid => {
+        if (valid) {
+          if (this.userRole === 0) {
+            const res = await userLogin(this.loginForm)
+            console.log('login', res)
+            setToken('abe-token', res.token)
+            setToken('abe-username', res.user.username)
+            this.$router.push({ path: this.redirect || '/info' })
+          } else {
+            const res = await adminLogin(this.loginForm)
+            console.log('login', res)
+            setToken('abe-token', res.token)
+            setToken('abe-username', res.user.username)
+            this.$router.push({ path: this.redirect || '/info' })
+          }
+
         /*   this.loading = true
           this.$store.dispatch('user/login', this.loginForm).then(() => {
             this.$router.push({ path: this.redirect || '/info' })
@@ -204,7 +260,13 @@ $cursor: #fff;
       }
     }
   }
-
+  .radio{
+    height:34px;
+    .el-radio__label{
+      color: white;
+    }
+    /* line-height: 54px; */
+  }
   .el-form-item {
     border: 1px solid rgba(255, 255, 255, 0.1);
     background: rgba(0, 0, 0, 0.1);

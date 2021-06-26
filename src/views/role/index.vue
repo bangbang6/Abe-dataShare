@@ -8,13 +8,11 @@
         <div class="user-request">
           <div class="header">
             <div class="key">申请对象:</div>
-            <div class="value">{{ user }}</div>
+            <div class="value">{{ userWord }}</div>
           </div>
           <div class="user-list">
-            <el-radio-group v-model="user">
-              <el-radio label="user1" />
-              <el-radio label="user2" />
-              <el-radio label="user3" />
+            <el-radio-group v-model="user" @change="handleUserChange">
+              <el-radio v-for="item in allUsers" :key="item.id" :label="item.id">{{ item.username }}</el-radio>
             </el-radio-group>
           </div>
         </div>
@@ -24,45 +22,112 @@
               <div class="key">申请属性:</div>
               <div class="value">{{ roles }}</div>
             </div>
-            <el-button type="primary" size="mini">申请</el-button>
+            <el-button type="primary" size="mini" @click="dialogVisible= true">申请</el-button>
           </div>
-          <div class="user-list">
-            <el-checkbox-group v-model="roleList">
-              <el-checkbox label="role1" />
-              <el-checkbox label="role2" />
-              <el-checkbox label="role3" />
-              <el-checkbox label="role4" />
-              <el-checkbox label="role5" />
+          <div v-if="roleList.length" class="user-list">
+            <el-checkbox-group v-model="requestRoles">
+              <el-checkbox v-for="item in roleList" :key="item" :label="item" />
             </el-checkbox-group>
-            <el-pagination
+            <!-- <el-pagination
               background
               layout="prev, pager, next"
               :total="1000"
               small
               class="pagination"
-            />
+            />-->
+          </div>
+          <div v-else class="empty">
+            <Empty description="暂无属性哦" image="@/assets/empty.png" />
           </div>
         </div>
       </div>
     </el-card>
-    <request-list></request-list>
+    <el-dialog title="申请理由" :visible.sync="dialogVisible" width="30%">
+      <div>
+        <span>备注:</span>
+        <el-input size="mini" v-model="applyRemarks" :style="{width:'320px',marginLeft:'20px'}"></el-input>
+      </div>
+      <span slot="footer" class="dialog-footer">
+        <el-button type="danger" size="mini" @click="handleApply">申请</el-button>
+      </span>
+    </el-dialog>
+    <request-list />
   </div>
 </template>
 
 <script>
 import RequestList from '@/components/requestList/RequestList.vue'
+import { applyForAttributes, getAllUsers, getOtherUserAttributes } from '@/api/role'
+import Empty from '@/components/empty/Empty.vue'
+import { Message } from 'element-ui'
 export default {
-  components: { RequestList },
+  components: { RequestList, Empty },
   data () {
     return {
-      user: 'user1',
-      roleList: ['role1', 'role3']
+      user: 0,
+      roleList: [],
+      allUsers: [],
+      requestRoles: [],
+      roles: '',
+      dialogVisible: false,
+      applyRemarks: ""
     }
   },
   computed: {
-    roles () {
-      if (this.roleList.length === 0) return ''
-      return this.roleList.join(',')
+
+    userWord () {
+      if (this.user === 0) return ''
+      return this.allUsers.filter((item) => item.id === this.user)[0].username
+    }
+  },
+  watch: {
+    requestRoles: function (newV) {
+      console.log('newV', newV)
+      if (newV.length === 0) {
+        this.roles = ''
+      } else {
+        this.roles = newV.join(',')
+      }
+    }
+  },
+  async mounted () {
+    const allusers = await getAllUsers()
+    console.log('allusers', allusers)
+    this.allUsers = allusers
+    this.user = this.allUsers[0].id
+    this.handleUserChange(this.user)
+  },
+  methods: {
+    async handleUserChange (e) {
+      console.log('e', e)
+      this.roleList = []
+      this.requestRoles = []
+      this.roles = ''
+      const roles = await getOtherUserAttributes(e)
+      console.log('roles', roles)
+
+      if (!roles) {
+        this.roleList = []
+      } else {
+        this.roleList = roles
+      }
+    },
+    async handleApply () {
+      if (!this.userWord || !this.roles) return
+      const res = await applyForAttributes({
+        targetUserName: this.userWord,
+        attributes: this.roles,
+        applyRemarks: this.applyRemarks
+      })
+      if (res) {
+        Message({
+          message: '申请成功',
+          duration: 1000,
+          type: 'success'
+        })
+
+      }
+      this.dialogVisible = false
     }
   }
 }
@@ -87,6 +152,12 @@ export default {
       }
       .user-list {
         margin-top: 10px;
+        height: 260px;
+
+        .el-radio-group {
+          height: 260px;
+          overflow-y: auto;
+        }
         .el-radio-group {
           display: flex;
           flex-direction: column;
@@ -97,9 +168,10 @@ export default {
             height: 30px;
             line-height: 30px;
             padding-left: 10px;
-            &.is-checked {
+            margin-right: 0px !important;
+            /* &.is-checked {
               margin-right: 0px !important;
-            }
+            } */
           }
           .el-radio:nth-child(odd) {
             background: #ecebeb;
@@ -111,6 +183,7 @@ export default {
       padding-left: 40px;
       box-sizing: border-box;
       flex: 1 0 50%;
+
       .header {
         height: 40px;
         font-size: 14px;
@@ -126,6 +199,8 @@ export default {
       }
       .user-list {
         background: #fbfbfb;
+        height: 260px;
+
         padding-bottom: 20px;
         box-sizing: border-box;
         .el-checkbox-group {
@@ -150,6 +225,11 @@ export default {
           margin-top: 20px;
           text-align: center;
         }
+      }
+      .empty {
+        background: #fbfbfb;
+        padding-bottom: 20px;
+        box-sizing: border-box;
       }
     }
   }

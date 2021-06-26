@@ -81,7 +81,7 @@ export const constantRoutes = [
         path: '/upload/file',
         name: 'uploadfile',
         component: () => import('@/views/upload/index.vue'),
-        meta: { title: '上传文件', icon: 'link' }
+        meta: { title: '上传文件', icon: 'el-icon-upload' }
       }
     ]
   },
