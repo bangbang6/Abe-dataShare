@@ -72,8 +72,9 @@
 
 <script>
 import { uploadFile } from '@/api/file'
-import { Message } from 'element-ui'
 import { getAllRoles } from '@/api/role'
+import { Message, Notification } from 'element-ui'
+
 export default {
   data () {
     return {
@@ -127,6 +128,24 @@ export default {
       this.$refs.upload.abort(file)
     },
     async upload () {
+      if (!this.file) {
+        Notification.error({
+          title: '拒绝',
+          message: '请添加文件',
+          duration: 1000
+
+        })
+        return
+      }
+      if (!this.fileLegancy) {
+        Notification.error({
+          title: '拒绝',
+          message: '请填写上传策略',
+          duration: 1000
+
+        })
+        return
+      }
       const formData = new FormData()
       formData.append('file', this.file)
       formData.append('rules', this.fileLegancy)
@@ -138,7 +157,6 @@ export default {
           duration: 1000,
           type: 'success'
         })
-
       }
     }
 

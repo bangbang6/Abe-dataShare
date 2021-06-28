@@ -64,32 +64,32 @@
       :total="list.length"
       :page-size="6"
       size="mini"
-      @current-change="handlePageChange"
       :style="{marginTop:'20px',textAlign:'center'}"
+      @current-change="handlePageChange"
     />
     <div
-      class="result"
       v-if="showTextarea"
+      class="result"
       style="position:absolute;width:100%;height:88%;z-index:999;top:50px;background:white;padding:20px"
     >
-      <div class="header2" :style="{fontSize:'22px',textAlign:'center'}">{{seeFileName}}</div>
+      <div class="header2" :style="{fontSize:'22px',textAlign:'center'}">{{ seeFileName }}</div>
       <textarea
-        name="result"
         id="fileMessage"
         v-model="fileContent"
+        name="result"
         :readonly="!seeOrChange"
         style="width:100%;height:80%;display:inline-block;border:none;font-size:16px;margin-top:20px;outline: none"
-      ></textarea>
+      />
       <div class="footer" style="display:flex;justify-content:flex-end">
         <el-button type="primary" @click="showTextarea = false">返回</el-button>
-        <el-button type="primary" @click="submitChangeFile" v-if="seeOrChange">确定</el-button>
+        <el-button v-if="seeOrChange" type="primary" @click="submitChangeFile">确定</el-button>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import { getMyFile, previewFile, updateFile } from '@/api/file'
+import { backwardFile, getMyFile, previewFile, updateFile } from '@/api/file'
 import { Message } from 'element-ui'
 export default {
   data () {
@@ -99,8 +99,8 @@ export default {
       list: [],
       operations: [],
       page: 1,
-      seeFileName: "",
-      fileContent: "",
+      seeFileName: '',
+      fileContent: '',
       showTextarea: false,
       seeOrChange: true
     }
@@ -142,8 +142,8 @@ export default {
   methods: {
     async handleClick (row, opId) {
       if (opId === 0) {
-        let fileContent = await previewFile(row.id)
-        console.log('fileContent', fileContent);
+        const fileContent = await previewFile(row.id)
+        console.log('fileContent', fileContent)
         if (fileContent) {
           this.fileContent = fileContent
           this.seeFileName = row.dataName
@@ -151,7 +151,7 @@ export default {
           this.seeOrChange = false
         }
       } else if (opId === 1) {
-        let fileContent = await previewFile(row.id)
+        const fileContent = await previewFile(row.id)
         this.fileId = row.id
         if (fileContent) {
           this.fileContent = fileContent
@@ -159,13 +159,21 @@ export default {
           this.showTextarea = true
           this.seeOrChange = true
         }
+      } else if (opId === 2) {
+        
+        this.$router.push({
+          path: '/info/backforward',
+          query: {
+            id: row.id
+          }
+        })
       }
     },
     handlePageChange (page) {
       this.page = page
     },
     async submitChangeFile () {
-      let res = await updateFile({
+      const res = await updateFile({
         dataId: this.fileId,
         dataContent: this.fileContent
       })

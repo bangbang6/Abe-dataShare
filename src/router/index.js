@@ -20,6 +20,7 @@ export const constantRoutes = [
 
     hidden: true
   },
+  
 
   {
     path: '/404',
@@ -47,7 +48,13 @@ export const constantRoutes = [
         name: 'file',
         component: () => import('@/views/file/index.vue'),
         meta: { title: '文件信息', icon: 'tree' }
-      }
+      },
+      {
+        path: '/info/backforward',
+        component: () => import('@/components/myfile/Backforward.vue'),
+
+        hidden: true
+      },
     ]
   },
 

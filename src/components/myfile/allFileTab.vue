@@ -77,8 +77,8 @@
           :total="list.length"
           :page-size="6"
           size="mini"
-          @current-change="handlePageChange"
           :style="{marginTop:'20px',textAlign:'center'}"
+          @current-change="handlePageChange"
         />
       </el-tab-pane>
     </el-tabs>
@@ -130,7 +130,7 @@ export default {
 
     this.list = this.listAll[0].map(item => ({
       ...item,
-      dataSize: (item.dataSize / (1024)).toFixed(2) + 'KB',
+      dataSize: (item.dataSize / (1024)).toFixed(2) + 'KB'
     }))
     console.log('list', this.list)
   },
@@ -156,8 +156,8 @@ export default {
         if (res) {
           Message({
             type: 'success',
-            duration: '1000',
-            message: "解密成功"
+            duration: 1000,
+            message: '解密成功,请在我的文件查看'
           })
           this.$emit('uncode')
         }
