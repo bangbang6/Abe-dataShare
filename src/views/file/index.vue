@@ -4,13 +4,13 @@
       <div slot="header" class="clearfix">
         <span>我的文件</span>
       </div>
-      <my-file />
+      <my-file ref="myFile" />
     </el-card>
     <el-card :style="{marginTop:'20px'}">
       <div slot="header" class="clearfix">
         <span>所有文件</span>
       </div>
-      <all-file-tab />
+      <all-file-tab @uncode="handleUncode" />
     </el-card>
   </div>
 </template>
@@ -23,6 +23,11 @@ export default {
   data () {
     return {
     }
+  },
+  methods: {
+    handleUncode () {
+      this.$refs.myFile.reGetList()
+    }
   }
 }
 </script>
@@ -32,5 +37,6 @@ export default {
   width: 100%;
   padding: 20px;
   height: calc(100vh - 50px);
+  overflow-y: auto;
 }
 </style>

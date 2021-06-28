@@ -18,7 +18,7 @@
     <el-table
       ref="multipleTable"
       size="mini"
-      :data="list"
+      :data="list.slice((page-1)*6,page*6)"
       tooltip-effect="dark"
       style="width: 100%"
     >
@@ -61,22 +61,48 @@
     <el-pagination
       background
       layout="prev, pager, next"
-      :total="1000"
+      :total="list.length"
+      :page-size="6"
       size="mini"
+      @current-change="handlePageChange"
       :style="{marginTop:'20px',textAlign:'center'}"
     />
+    <div
+      class="result"
+      v-if="showTextarea"
+      style="position:absolute;width:100%;height:88%;z-index:999;top:50px;background:white;padding:20px"
+    >
+      <div class="header2" :style="{fontSize:'22px',textAlign:'center'}">{{seeFileName}}</div>
+      <textarea
+        name="result"
+        id="fileMessage"
+        v-model="fileContent"
+        :readonly="!seeOrChange"
+        style="width:100%;height:80%;display:inline-block;border:none;font-size:16px;margin-top:20px;outline: none"
+      ></textarea>
+      <div class="footer" style="display:flex;justify-content:flex-end">
+        <el-button type="primary" @click="showTextarea = false">返回</el-button>
+        <el-button type="primary" @click="submitChangeFile" v-if="seeOrChange">确定</el-button>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
-import { getMyFile } from '@/api/file'
+import { getMyFile, previewFile, updateFile } from '@/api/file'
+import { Message } from 'element-ui'
 export default {
   data () {
     return {
       fileName: '',
       date: [],
       list: [],
-      operations: []
+      operations: [],
+      page: 1,
+      seeFileName: "",
+      fileContent: "",
+      showTextarea: false,
+      seeOrChange: true
     }
   },
   async mounted () {
@@ -114,11 +140,52 @@ export default {
     )
   },
   methods: {
-    handleClick (row, opId) {
-
+    async handleClick (row, opId) {
+      if (opId === 0) {
+        let fileContent = await previewFile(row.id)
+        console.log('fileContent', fileContent);
+        if (fileContent) {
+          this.fileContent = fileContent
+          this.seeFileName = row.dataName
+          this.showTextarea = true
+          this.seeOrChange = false
+        }
+      } else if (opId === 1) {
+        let fileContent = await previewFile(row.id)
+        this.fileId = row.id
+        if (fileContent) {
+          this.fileContent = fileContent
+          this.seeFileName = row.dataName
+          this.showTextarea = true
+          this.seeOrChange = true
+        }
+      }
+    },
+    handlePageChange (page) {
+      this.page = page
+    },
+    async submitChangeFile () {
+      let res = await updateFile({
+        dataId: this.fileId,
+        dataContent: this.fileContent
+      })
+      Message({
+        type: 'success',
+        duration: '1000',
+        message: '文件修改成功'
+      })
     },
     search (e) {
 
+    },
+    async reGetList () {
+      const list = await getMyFile()
+      this.list = list.map(item => ({
+        ...item,
+        dataSize: (+item.dataSize / 1024).toFixed(2) + 'MB'
+
+      })
+      )
     }
   }
 }
@@ -127,6 +194,7 @@ export default {
 <style lang="scss" scoped>
 .my-file {
   height: 360px;
+  position: relative;
   .header {
     display: flex;
     justify-content: space-between;

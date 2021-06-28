@@ -34,3 +34,38 @@ export function getAllFile () {
     method: 'GET',
   })
 }
+/**
+ * 预览文件
+ * @param {*} data 
+ * @returns 
+ */
+export function previewFile (id) {
+  return request({
+    url: `/data/getDataContent?id=${id}`,
+    method: 'GET',
+  })
+}
+/**
+ * 修改文件
+ * @param {*} data 
+ * @returns 
+ */
+export function updateFile (data) {
+  return request({
+    url: `/data/updateData`,
+    method: 'POST',
+    data
+  })
+}
+/**
+ * 解密文件
+ * @param {*} data 
+ * @returns 
+ */
+export function unCodeFile (data) {
+  return request({
+    url: `/data/decData`,
+    method: 'POST',
+    data
+  })
+}

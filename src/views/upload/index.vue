@@ -64,7 +64,7 @@
             </el-checkbox-group>
           </div>
         </div>
-        <div class="expression">策略表达式: {{fileLegancy}}</div>
+        <div class="expression">策略表达式: {{ fileLegancy }}</div>
       </div>
     </el-card>
   </div>
@@ -87,13 +87,33 @@ export default {
       selectRolesList: []
     }
   },
+  watch: {
+    selectRolesList: {
+      handler: function (newV) {
+        this.fileLegancy = ''
+        console.log('newV', newV)
+        newV.forEach((item, index) => {
+          if (item.length === 0) return
+          else if (item.length === 1) {
+            /* index !== 0 && (this.fileLegancy += ' and ' + item) */
+            /* index === 0 &&  */(this.fileLegancy += item)
+          } else {
+            this.fileLegancy = this.fileLegancy + '('
+            this.fileLegancy = this.fileLegancy + item.join(' or ')
+            this.fileLegancy = this.fileLegancy + ')'
+          }
+          if (index < newV.filter(v => v.length > 0).length - 1) this.fileLegancy = this.fileLegancy + ' and '
+        })
+      },
+      immediate: true
+    }
+  },
   async mounted () {
     const allRoles = await getAllRoles()
     this.allRoles = allRoles
     let length = allRoles.length
     while (length--) {
       this.selectRolesList.push([])
-
     }
   },
 
@@ -118,32 +138,10 @@ export default {
           duration: 1000,
           type: 'success'
         })
+
       }
     }
 
-  },
-  watch: {
-    selectRolesList: {
-      handler: function (newV) {
-        this.fileLegancy = ''
-        console.log('newV', newV);
-        newV.forEach((item, index) => {
-          if (item.length === 0) return
-          else if (item.length === 1) {
-
-            /* index !== 0 && (this.fileLegancy += ' and ' + item) */
-            /* index === 0 &&  */(this.fileLegancy += item)
-          }
-          else {
-            this.fileLegancy = this.fileLegancy + '('
-            this.fileLegancy = this.fileLegancy + item.join(' or ')
-            this.fileLegancy = this.fileLegancy + ')'
-          }
-          if (index < newV.filter(v => v.length > 0).length - 1) this.fileLegancy = this.fileLegancy + ' and '
-        });
-      },
-      immediate: true
-    }
   }
 }
 </script>
@@ -206,3 +204,4 @@ export default {
   }
 }
 </style>
+

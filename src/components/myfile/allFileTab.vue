@@ -1,7 +1,12 @@
 <template>
   <div class="all-file">
-    <el-tabs v-model="channelId" type="card" @tab-click="handleTabClick">
-      <el-tab-pane v-for="(item,index) in channels" :key="item.id" :label="item.channelName">
+    <el-tabs v-model="channelId" type="border-card" @tab-click="handleTabClick">
+      <el-tab-pane
+        v-for="(item,index) in channels"
+        :key="item.id"
+        :label="item.channelName"
+        :data-tab="`${index}`"
+      >
         <div class="header">
           <el-date-picker
             v-model="date"
@@ -26,15 +31,16 @@
         <el-table
           ref="multipleTable"
           size="mini"
-          :data="list[index]"
+          :data="list.slice((page-1)*6,page*6)"
+          style="{width: 100%,height: 450px}"
           tooltip-effect="dark"
-          style="width: 100%"
         >
           <el-table-column type="selection" width="55" />
           <el-table-column label="文件名" width="200">
             <template slot-scope="scope">{{ scope.row.dataName }}</template>
           </el-table-column>
           <el-table-column prop="dataSize" label="文件大小" />
+          <el-table-column prop="decryptionRules" label="加密策略" show-overflow-tooltip />
           <el-table-column label="...">
             <template slot-scope="scope">
               <el-tooltip
@@ -65,15 +71,24 @@
             </template>
           </el-table-column>
         </el-table>
+        <el-pagination
+          background
+          layout="prev, pager, next"
+          :total="list.length"
+          :page-size="6"
+          size="mini"
+          @current-change="handlePageChange"
+          :style="{marginTop:'20px',textAlign:'center'}"
+        />
       </el-tab-pane>
     </el-tabs>
-    <div class="header" />
   </div>
 </template>
 
 <script>
 import { getAllChannel } from '@/api/user'
-import { getAllFile } from '@/api/file'
+import { getAllFile, unCodeFile } from '@/api/file'
+import { Message } from 'element-ui'
 export default {
   data () {
     return {
@@ -82,7 +97,9 @@ export default {
       date: [],
       fileName: '',
       list: [],
-      operations: []
+      listAll: [],
+      operations: [],
+      page: 1
 
     }
   },
@@ -99,7 +116,7 @@ export default {
         id: 4,
 
         content: '解密',
-        icon: 'el-icon-position'
+        icon: 'el-icon-reading'
       }
     ]
     this.channels = await getAllChannel()
@@ -109,15 +126,42 @@ export default {
     for (const key in list) {
       listArr.push(list[key])
     }
-    this.list = listArr
-    console.log('this.list', this.list)
+    this.listAll = listArr
+
+    this.list = this.listAll[0].map(item => ({
+      ...item,
+      dataSize: (item.dataSize / (1024)).toFixed(2) + 'KB',
+    }))
+    console.log('list', this.list)
   },
   methods: {
+    handlePageChange (page) {
+      this.page = page
+    },
     handleTabClick (tab) {
-      console.log('tab', tab)
+      console.log('tab', tab.$el.dataset.tab)
+      const tabIndex = +tab.$el.dataset.tab
+      this.list = this.listAll[tabIndex]
+      console.log('this.list', this.list)
     },
     search () {
 
+    },
+    async handleClick (row, opId) {
+      if (opId === 4) {
+        const res = await unCodeFile({
+          dataId: row.id
+        })
+        console.log('res', res)
+        if (res) {
+          Message({
+            type: 'success',
+            duration: '1000',
+            message: "解密成功"
+          })
+          this.$emit('uncode')
+        }
+      }
     }
   }
 
@@ -132,6 +176,9 @@ export default {
     .wrapper {
       display: flex;
     }
+  }
+  .el-table {
+    margin-top: 20px;
   }
 }
 </style>
