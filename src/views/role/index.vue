@@ -22,7 +22,7 @@
               <div class="key">申请属性:</div>
               <div class="value">{{ roles }}</div>
             </div>
-            <el-button type="primary" size="mini" @click="dialogVisible= true">申请</el-button>
+            <el-button type="primary" size="mini" @click="handleClick">申请</el-button>
           </div>
           <div v-if="roleList.length" class="user-list">
             <el-checkbox-group v-model="requestRoles">
@@ -51,7 +51,7 @@
         <el-button type="danger" size="mini" @click="handleApply">申请</el-button>
       </span>
     </el-dialog>
-    <request-list />
+    <request-list :list="list" />
   </div>
 </template>
 
@@ -60,6 +60,8 @@ import RequestList from '@/components/requestList/RequestList.vue'
 import { applyForAttributes, getAllUsers, getOtherUserAttributes } from '@/api/role'
 import Empty from '@/components/empty/Empty.vue'
 import { Message } from 'element-ui'
+import { getUserApplyAttributes } from '@/api/role'
+
 export default {
   components: { RequestList, Empty },
   data () {
@@ -70,6 +72,7 @@ export default {
       requestRoles: [],
       roles: '',
       dialogVisible: false,
+      list: [],
       applyRemarks: "",
       imgUrl: require('@/assets/empty.png')
     }
@@ -97,8 +100,14 @@ export default {
     this.allUsers = allusers
     this.user = this.allUsers[0].id
     this.handleUserChange(this.user)
+    this.getList()
   },
   methods: {
+    async getList () {
+      const list = await getUserApplyAttributes()
+      console.log('list', list)
+      this.list = list
+    },
     async handleUserChange (e) {
       console.log('e', e)
       this.roleList = []
@@ -128,7 +137,12 @@ export default {
         })
 
       }
+      this.getList()
+
       this.dialogVisible = false
+    },
+    handleClick () {
+      this.dialogVisible = true
     }
   }
 }

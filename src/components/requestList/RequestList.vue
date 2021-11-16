@@ -13,7 +13,7 @@
           placement="top"
         >
           <div :style="{height:'40px',lineHeight:'40px'}">
-            <span>向{{item.applierName}}申请</span>
+            <span>向{{item.targetUserName}}申请</span>
             <span :style="{color:'#009DFF',marginLeft:'5px'}">{{item.attributes}}</span>
           </div>
         </el-timeline-item>
@@ -26,17 +26,20 @@
 </template>
 
 <script>
-import { getUserApplyAttributes } from '@/api/role'
 export default {
+  props: {
+    list: {
+      type: Array,
+      default: () => []
+    }
+  },
   data () {
     return {
-      list: []
+
     }
   },
   async mounted () {
-    const list = await getUserApplyAttributes()
-    console.log('list', list)
-    this.list = list
+
   }
 }
 </script>
