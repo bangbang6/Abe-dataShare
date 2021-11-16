@@ -10,7 +10,7 @@
     >
       <div class="title-container">
         <img :src="logo" class="sidebar-logo">
-        <div class="sidebar-title">医数链盟</div>
+        <div class="sidebar-title">智慧城市数据共享与交换平台</div>
       </div>
       <div class="menu">
         <div :class="['login-text',activeIndex === 0?'active':'']" @click="e=>activeIndex=0">账号密码登录</div>
@@ -73,7 +73,7 @@
       </el-form-item>
       <div v-if="activeIndex===0" class="radio">
         <el-radio-group v-model="userRole">
-          <el-radio :label="0">医生</el-radio>
+          <el-radio :label="0">用户</el-radio>
           <el-radio :label="1">管理员</el-radio>
 
         </el-radio-group>
@@ -309,7 +309,7 @@ $light_gray: #eee;
 
   .login-form {
     position: relative;
-    width: 520px;
+    width: 560px;
     max-width: 100%;
     padding: 160px 35px 0;
     margin: 0 auto;
@@ -339,13 +339,18 @@ $light_gray: #eee;
   .title-container {
     position: relative;
     display: flex;
-    font-size: 20px;
+    font-size: 32px;
     color: $light_gray;
     margin: 0px auto 40px auto;
     text-align: center;
     font-weight: bold;
     justify-content: center;
     align-items: center;
+    .sidebar-logo{
+    width:32px;
+    height:32px;
+
+    }
     div {
       margin-left: 20px;
     }

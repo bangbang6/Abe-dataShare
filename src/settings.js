@@ -1,6 +1,6 @@
 module.exports = {
 
-  title: '医数链盟',
+  title: '智慧城市数据共享与交换平台',
 
   /**
    * @type {boolean} true | false

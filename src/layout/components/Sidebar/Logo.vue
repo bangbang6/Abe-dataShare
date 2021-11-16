@@ -24,7 +24,7 @@ export default {
   },
   data () {
     return {
-      title: '医数链盟',
+      title: '智慧城市',
       logo: require('@/assets/logo.png')
     }
   }

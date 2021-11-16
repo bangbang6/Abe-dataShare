@@ -7,7 +7,7 @@
       </div>
       <div class="right">
         <div class="value">{{ username }}</div>
-        <div class="value">华中科技大学计算机学院</div>
+        <div class="value">湖北省武汉市洪山区华中科技大学</div>
       </div>
     </div>
     <div class="roles">

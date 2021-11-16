@@ -26,7 +26,7 @@
         </div>
         <div class="message">
           <div class="info">
-            <span class="key">科室:</span>
+            <span class="key">部门:</span>
             <span v-if="firstUpChainTx" class="value">
               {{ firstUpChainTx }}
               <i class="el-icon-circle-check" :style="{color:'#67c23a'}" />

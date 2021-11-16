@@ -37,7 +37,7 @@
             />-->
           </div>
           <div v-else class="empty">
-            <Empty description="暂无属性哦" image="@/assets/empty.png" />
+            <Empty description="暂无属性哦" :image="imgUrl" />
           </div>
         </div>
       </div>
@@ -70,7 +70,8 @@ export default {
       requestRoles: [],
       roles: '',
       dialogVisible: false,
-      applyRemarks: ""
+      applyRemarks: "",
+      imgUrl: require('@/assets/empty.png')
     }
   },
   computed: {
