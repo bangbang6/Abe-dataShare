@@ -94,13 +94,34 @@ export default {
         this.fileLegancy = ''
         console.log('newV', newV)
         newV.forEach((item, index) => {
+          let key = ''
+          
           if (item.length === 0) return
           else if (item.length === 1) {
             /* index !== 0 && (this.fileLegancy += ' and ' + item) */
-            /* index === 0 &&  */(this.fileLegancy += item)
+            this.allRoles.forEach((match)=>{
+            console.log('tes',match,item)
+            if(match.value.includes(item[0])){
+              
+              key = match.key
+            }
+          })
+            
+            /* index === 0 &&  */
+            this.fileLegancy += `${key}:${item}`
           } else {
+            const res = item.map(r=>{
+               this.allRoles.forEach((match)=>{
+            console.log('tes',match,item)
+            if(match.value.includes(r)){
+              
+              key = match.key
+            }
+               })
+              return `${key}:${r}`
+            })
             this.fileLegancy = this.fileLegancy + '('
-            this.fileLegancy = this.fileLegancy + item.join(' or ')
+            this.fileLegancy = this.fileLegancy + res.join(' or ')
             this.fileLegancy = this.fileLegancy + ')'
           }
           if (index < newV.filter(v => v.length > 0).length - 1) this.fileLegancy = this.fileLegancy + ' and '
